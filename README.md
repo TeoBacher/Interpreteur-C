@@ -1,16 +1,16 @@
-## Utilisation de l'interpréteur 
+# Utilisation de l'interpréteur
 
 Compilation :
+
 ```bash
 gcc -o exe lexer.c parser.c
 ```
+
 Execution :
 
 Mode normal = ```./exe ou ./exe 0```
 
 Mode debug = ```./exe 1```
-
-# Projet : Création d'un Interpréteur de Langage de Programmation
 
 ## Objectif Général
 
