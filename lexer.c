@@ -10,6 +10,7 @@ void setInput(const char *inputStr)
     position = 0;
 }
 
+// Return the current character in the input
 char peek()
 {
     return input[position];

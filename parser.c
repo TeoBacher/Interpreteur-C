@@ -24,6 +24,7 @@ ASTNode *parsePrintStatement();
 int lookupVariable(const char *name);
 void assignVariable(const char *name, int value);
 
+// Parser entry point
 void evaluateProgram(ASTNode *node)
 {
     while (node != NULL)
@@ -39,6 +40,7 @@ void nextToken()
     if (DEBUG) printf("Parser: Next token is '%s' of type %d\n", currentToken.value, currentToken.type);
 }
 
+// Match the current token with the expected token
 void match(TokenType expected)
 {
     if (currentToken.type == expected)
@@ -144,7 +146,7 @@ ASTNode *parseIfStatement()
 ASTNode *parseBlock()
 {
     if (DEBUG) printf("Parser: Parsing a block\n");
-    match(Lbrace);
+    match(Lbrace); // {
     ASTNode *statements = NULL;
     ASTNode *lastStatement = NULL;
 
@@ -163,7 +165,7 @@ ASTNode *parseBlock()
         lastStatement = stmt;
     }
 
-    match(Rbrace);
+    match(Rbrace); // }
     return statements;
 }
 
@@ -196,6 +198,7 @@ ASTNode *parseExpression()
     if (DEBUG) printf("Parser: Parsing an expression\n");
     ASTNode *node = parseTerm();
 
+    // Parse binary operators
     while (currentToken.type == Add || currentToken.type == Sub ||
            currentToken.type == Lt || currentToken.type == Le ||
            currentToken.type == Gt || currentToken.type == Ge ||
