@@ -1,56 +1,48 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
 #include "lexer.h"
 
-Token currentToken;
+// Types of AST nodes
+typedef enum
+{
+    NumberNode,
+    IdentifierNode,
+    BinaryOpNode,
+    AssignmentNode,
+    PrintNode,
+    IfNode,
+    BlockNode,
+} ASTNodeType;
 
-typedef struct ASTNode {
-    TokenType type;            
-    int value;                 
-    struct ASTNode* left;      
-    struct ASTNode* right;     
+// Structure of an AST node
+typedef struct ASTNode
+{
+    ASTNodeType nodeType;       // Type of AST node
+    TokenType tokenType;        // For operators
+    int value;                  // For numbers
+    char identifier[256];       // For variables
+    struct ASTNode *left;
+    struct ASTNode *right;
+    struct ASTNode *condition;
+    struct ASTNode *thenBranch;
+    struct ASTNode *elseBranch;
+    struct ASTNode *next;
 } ASTNode;
 
+// Parser functions
+ASTNode *parseProgram();
+void freeAST(ASTNode *node);
+int evaluateAST(ASTNode *node);
+
 // Symbol table
-typedef struct {
-    char identifier[256];  // Name of the variable
-    int value;             // Value associated with the variable
+typedef struct
+{
+    char identifier[256];
+    int value;
 } SymbolTableEntry;
 
-extern SymbolTableEntry symbolTable[100]; // Max size of the symbol table
-extern int symbolCount;                   // Number of entries in the symbol table
-
-
-void match(TokenType expected);
-
-void nextToken();
-
-void printStatement();
-
-ASTNode* factor();
-
-ASTNode* term();
-
-ASTNode* termTail(ASTNode* lvalue);
-
-ASTNode* expression();
-
-ASTNode* exprTail(ASTNode* lvalue);
-
-ASTNode* createNumberNode(int value);
-
-ASTNode* createOperatorNode(TokenType type, ASTNode* left, ASTNode* right);
-
-int evaluateAST(ASTNode* node);
-
-int lookupVariable(const char *name);   
-
-void assignVariable(const char *name, int value); 
-
-
+extern SymbolTableEntry symbolTable[100];
+extern int symbolCount;
 
 #endif

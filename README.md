@@ -3,7 +3,7 @@
 Compilation :
 
 ```bash
-gcc -o exe lexer.c parser.c
+gcc -o exe lexer.c parser.c input.c
 ```
 
 Execution :
