@@ -34,6 +34,7 @@ typedef struct ASTNode
 ASTNode *parseProgram();
 void freeAST(ASTNode *node);
 int evaluateAST(ASTNode *node);
+void evaluateProgram(ASTNode *node);
 
 // Symbol table
 typedef struct

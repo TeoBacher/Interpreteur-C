@@ -24,6 +24,15 @@ ASTNode *parsePrintStatement();
 int lookupVariable(const char *name);
 void assignVariable(const char *name, int value);
 
+void evaluateProgram(ASTNode *node)
+{
+    while (node != NULL)
+    {
+        evaluateAST(node);
+        node = node->next;
+    }
+}
+
 void nextToken()
 {
     currentToken = getNextToken();

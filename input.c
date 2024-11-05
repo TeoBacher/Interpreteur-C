@@ -8,7 +8,7 @@ void interpret(const char *inputExpression)
     setInput(inputExpression);
     ASTNode *program = parseProgram();
     if (DEBUG) printf("Interpreter: Parsed program successfully\n");
-    evaluateAST(program);
+    evaluateProgram(program);
     if (DEBUG) printf("Interpreter: Evaluated AST successfully\n");
     freeAST(program);
 }
