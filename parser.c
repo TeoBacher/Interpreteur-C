@@ -22,7 +22,7 @@ ASTNode *parseIfStatement();
 ASTNode *parseAssignment();
 ASTNode *parsePrintStatement();
 int lookupVariable(const char *name);
-void assignVariable(const char *name, int value);
+void assignVariable(const char *name, VariableType type, int intValue);
 
 // Parser entry point
 void evaluateProgram(ASTNode *node)
@@ -81,31 +81,32 @@ ASTNode *parseProgram()
     return statements;
 }
 
-ASTNode *parseStatement()
-{
+ASTNode *parseStatement() {
     if (DEBUG) printf("Parser: Parsing a statement\n");
     ASTNode *node;
 
-    if (currentToken.type == If)
-    {
+    if (currentToken.type == Int) {  // Si le mot-clé 'int' est trouvé
+        nextToken();                 // Passe le mot-clé 'int'
+        node = parseAssignment();    // Appelle `parseAssignment`
+        node->varType = TYPE_INT;    // Définit le type de variable à `int`
+    }
+    else if (currentToken.type == If) {
         node = parseIfStatement();
     }
-    else if (currentToken.type == Print)
-    {
+    else if (currentToken.type == Print) {
         node = parsePrintStatement();
     }
-    else if (currentToken.type == Identifier)
-    {
+    else if (currentToken.type == Identifier) {
         node = parseAssignment();
     }
-    else
-    {
+    else {
         printf("Syntax Error: Unexpected token '%s' of type %d\n", currentToken.value, currentToken.type);
         exit(1);
     }
 
     return node;
 }
+
 
 ASTNode *parseIfStatement()
 {
@@ -169,17 +170,33 @@ ASTNode *parseBlock()
     return statements;
 }
 
-ASTNode *parseAssignment()
-{
-    if (DEBUG) printf("Parser: Parsing an assignment\n");
+ASTNode *parseAssignment() {
     ASTNode *node = malloc(sizeof(ASTNode));
     node->nodeType = AssignmentNode;
+
+    // Récupère l'identifiant de la variable
     strcpy(node->identifier, currentToken.value);
     match(Identifier);
+
+    // Vérifie le signe d'assignation
     match(Assign);
+
+    // Analyse de l'expression à droite de l'affectation
     node->right = parseExpression();
+
+    // Vérifie le type de l'expression assignée
+    if (node->varType == TYPE_INT &&
+        node->right->nodeType != NumberNode &&
+        node->right->nodeType != IdentifierNode &&
+        node->right->nodeType != BinaryOpNode) {
+        printf("Type Error: Expected an integer expression for variable '%s'\n", node->identifier);
+        exit(1);
+    }
+
     return node;
 }
+
+
 
 ASTNode *parsePrintStatement()
 {
@@ -341,7 +358,7 @@ int evaluateAST(ASTNode *node)
     case AssignmentNode:
     {
         int value = evaluateAST(node->right);
-        assignVariable(node->identifier, value);
+        assignVariable(node->identifier, node->varType, value);
         if (DEBUG) printf("Evaluator: Assigned value %d to variable '%s'\n", value, node->identifier);
         return value;
     }
@@ -379,44 +396,44 @@ int evaluateAST(ASTNode *node)
     }
 }
 
-int lookupVariable(const char *name)
-{
-    for (int i = 0; i < symbolCount; i++)
-    {
-        if (strcmp(symbolTable[i].identifier, name) == 0)
-        {
-            if (DEBUG) printf("Evaluator: Variable '%s' found with value %d\n", name, symbolTable[i].value);
-            return symbolTable[i].value;
+int lookupVariable(const char *name) {
+    for (int i = 0; i < symbolCount; i++) {
+        if (strcmp(symbolTable[i].identifier, name) == 0) {
+            if (symbolTable[i].type != TYPE_INT) {
+                printf("Type Error: Expected int for variable '%s'\n", name);
+                exit(1);
+            }
+            return symbolTable[i].intValue;
         }
     }
     printf("Runtime Error: Undefined variable '%s'\n", name);
     exit(1);
 }
 
-void assignVariable(const char *name, int value)
-{
-    for (int i = 0; i < symbolCount; i++)
-    {
-        if (strcmp(symbolTable[i].identifier, name) == 0)
-        {
-            symbolTable[i].value = value;
-            if (DEBUG) printf("Evaluator: Updated variable '%s' with new value %d\n", name, value);
+
+void assignVariable(const char *name, VariableType type, int intValue) {
+    for (int i = 0; i < symbolCount; i++) {
+        if (strcmp(symbolTable[i].identifier, name) == 0) {
+            if (symbolTable[i].type != type) {
+                printf("Type Error: Type mismatch for variable '%s'\n", name);
+                exit(1);
+            }
+            symbolTable[i].intValue = intValue;
             return;
         }
     }
-    if (symbolCount < 100)
-    {
+
+    if (symbolCount < 100) {
         strcpy(symbolTable[symbolCount].identifier, name);
-        symbolTable[symbolCount].value = value;
+        symbolTable[symbolCount].type = type;
+        symbolTable[symbolCount].intValue = intValue;
         symbolCount++;
-        if (DEBUG) printf("Evaluator: Created new variable '%s' with value %d\n", name, value);
-    }
-    else
-    {
+    } else {
         printf("Runtime Error: Symbol table full\n");
         exit(1);
     }
 }
+
 
 void freeAST(ASTNode *node)
 {

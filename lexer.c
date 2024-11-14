@@ -68,6 +68,7 @@ Token getNextToken()
         return createToken(Number, buffer);
     }
 
+
     // Identifiers and keywords
     if (isalpha(current_char))
     {
@@ -109,6 +110,12 @@ Token getNextToken()
             if (DEBUG) printf("Lexer: Recognized keyword 'print'\n");
             return createToken(Print, "print");
         }
+        else if (strcmp(buffer, "int") == 0)
+        {
+            if (DEBUG) printf("Lexer: Recognized keyword 'int'\n");
+            return createToken(Int, "int");
+        }
+
         else
         {
             if (DEBUG) printf("Lexer: Recognized identifier '%s'\n", buffer);

@@ -3,6 +3,13 @@
 
 #include "lexer.h"
 
+typedef enum {
+    TYPE_INT,
+    TYPE_FLOAT,
+    TYPE_CHAR
+} VariableType;
+
+
 // Types of AST nodes
 typedef enum
 {
@@ -20,6 +27,7 @@ typedef struct ASTNode
 {
     ASTNodeType nodeType;       // Type of AST node
     TokenType tokenType;        // For operators
+    VariableType varType;
     int value;                  // For numbers
     char identifier[256];       // For variables
     struct ASTNode *left;
@@ -40,17 +48,13 @@ void evaluateProgram(ASTNode *node);
 typedef struct
 {
     char identifier[256];
-    int value;
+    VariableType type;
     int intValue;       
     float floatValue;   
     char charValue;
 } SymbolTableEntry;
 
-typedef enum {
-    TYPE_INT,
-    TYPE_FLOAT,
-    TYPE_CHAR
-} VariableType;
+
 
 extern SymbolTableEntry symbolTable[100];
 extern int symbolCount;

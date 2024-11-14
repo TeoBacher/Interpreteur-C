@@ -33,15 +33,19 @@ typedef enum
     Else = 17,        // 'else'
     ElseIf = 18,      // 'else if'
     Print = 19,       // 'print'
+    // Types
+    Int = 20,
+    Char = 21,
+    Float = 22,
     // Symbols
-    Lparen = 20,      // '('
-    Rparen = 21,      // ')'
-    Lbrace = 22,      // '{'
-    Rbrace = 23,      // '}'
-    Semicolon = 24,   // ';'
+    Lparen = 23,      // '('
+    Rparen = 24,      // ')'
+    Lbrace = 25,      // '{'
+    Rbrace = 26,      // '}'
+    Semicolon = 26,   // ';'
     // Special tokens
-    Eof = 25,         // End of file
-    Error = 26        // Error
+    Eof = 27,         // End of file
+    Error = 28        // Error
 } TokenType;
 
 // Token structure
