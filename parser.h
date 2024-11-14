@@ -41,7 +41,16 @@ typedef struct
 {
     char identifier[256];
     int value;
+    int intValue;       
+    float floatValue;   
+    char charValue;
 } SymbolTableEntry;
+
+typedef enum {
+    TYPE_INT,
+    TYPE_FLOAT,
+    TYPE_CHAR
+} VariableType;
 
 extern SymbolTableEntry symbolTable[100];
 extern int symbolCount;
