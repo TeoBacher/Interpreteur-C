@@ -1,60 +1,30 @@
-/**
- * @file lexer.c
- * @brief A simple lexical analyzer for tokenizing arithmetic expressions.
- *
- * This file contains the implementation of a lexical analyzer (lexer) that
- * tokenizes a given arithmetic expression into a series of tokens. The lexer
- * supports basic arithmetic operations, parentheses, and identifiers.
- *
- * The lexer processes the input character by character, skipping whitespace,
- * and generating tokens based on the recognized patterns.
- *
- * The main function demonstrates the usage of the lexer by tokenizing a sample
- * arithmetic expression and printing the generated tokens.
- *
- * @note The input expression is hardcoded in the main function for demonstration
- * purposes.
- */
-#include <stdio.h>
+#include "lexer.h"
 #include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
-#include "parser.h"
-#include "input.h"
 
-const char *input;
-int position = 0;
-int debugMode = 0;
+static const char *input; // Input string
+static int position = 0;  // Current position in input
 
-
-// Function that creates the token
-Token createToken(TokenType type, const char *value)
+void setInput(const char *inputStr)
 {
-    Token token;
-    token.type = type;
-    token.value = (char *)malloc(strlen(value) + 1);
-    if (token.value != NULL)
-    {
-        strncpy(token.value, value, strlen(value) + 1);
-    }
-        printf("Creating Token: Type = %d, Value = %s\n", type, value);  // Debug
-
-    return token;
+    input = inputStr;
+    position = 0;
 }
 
-// Get the character
+// Return the current character in the input
 char peek()
 {
     return input[position];
 }
 
-// Function for advancing the input
 void advance()
 {
-    position++;
+    if (peek() != '\0')
+    {
+        position++;
+    }
 }
 
-void ignoreSpaces()
+void skipWhitespace()
 {
     while (isspace(peek()))
     {
@@ -62,166 +32,201 @@ void ignoreSpaces()
     }
 }
 
-Token getNextToken() {
-    while (peek() != '\0') {
-        char current_char = peek();
-
-        ignoreSpaces();
-
-        current_char = peek();  
-
-        if (strncmp(input + position, "printf", 6) == 0 && !isalnum(input[position + 6])) {
-            position += 6;  
-
-            ignoreSpaces(); 
-            
-            current_char = peek();  
-
-            return createToken(Printf, "printf");
-        }
-
-        if (isdigit(current_char)) {
-            char number[256];
-            int i = 0;
-            while (isdigit(peek())) {
-                number[i++] = peek();
-                advance();
-            }
-            number[i] = '\0';
-            return createToken(Number, number);
-        }
-
-        if (isalpha(current_char)) {
-            char id[256];
-            int i = 0;
-            while (isalpha(peek())) {
-                id[i++] = peek();
-                advance();
-            }
-            id[i] = '\0';
-
-            // Check if the identifier is 'print'
-            if (strcmp(id, "print") == 0) {
-                return createToken(Print, "print");
-            }
-
-            return createToken(Identifier, id);
-        }
-
-
-        // Operator (+, -, *, etc.)
-        switch (current_char) {
-            case '=':
-                advance();
-                return createToken(Assign, "=");
-            case '+':
-                advance();
-                return createToken(Add, "+");
-            case '-':
-                advance();
-                return createToken(Sub, "-");
-            case '*':
-                advance();
-                return createToken(Mul, "*");
-            case '/':
-                advance();
-                return createToken(Div, "/");
-            case '%':
-                advance();
-                return createToken(Mod, "%");
-            case '^':
-                advance();
-                return createToken(Pow, "^");
-            case '(':
-                advance();
-                return createToken(Lparen, "(");
-            case ')':
-                advance();
-                return createToken(Rparen, ")");
-            default:
-                printf("Syntax error at char: '%c', Position: %d\n", current_char, position);  // Debug
-                return createToken(Error, "Syntax error or unknown character");
-        }
-    }
-    return createToken(Eof, "");
-}
-
-
-// int main()
-// {
-//     // Array of test expressions
-//     const char* testExpressions[] = {
-//         // "2 ^ 3",
-//         // "2 ^ 3 ^ 2",
-//         // "10 ^ 2",
-//         // "5 < 10",
-//         // "10 <= 10",
-//         // "15 > 10",
-//         // "20 >= 20",
-//         // "5 != 10",
-//         // "(2 + 3) * 2",
-//         // "10 - 5 <= 5",
-//         // "2 * 3 > 5",
-//         // "10 / 2 >= 5",
-//         // "10 % 3 != 1",
-//         // "printf((2 + 3) * 4 )",
-//         "x = 5 + 3",
-//         "printf( x )",
-//         "y =  x + x + 5",
-//         "printf( y )",
-//         "y = y * 2",
-//         "printf( y )"
-//     };
-
-//     // Number of test expressions
-//     int numTests = sizeof(testExpressions) / sizeof(testExpressions[0]);
-
-//     for (int i = 0; i < numTests; i++)
-//     {
-//         input = testExpressions[i];
-//         position = 0;
-
-//         printf("Expression: %s\n", input);
-
-//         nextToken();  
-
-//         if (currentToken.type == Printf) {
-//     printStatement(); 
-//     } 
-//     else {
-//         ASTNode* ast = expression(); 
-//         int result = evaluateAST(ast);
-//         printf("Résultat : %d\n", result);
-//     }
-//     }
-
-//     return 0;
-// }
-
-
-void interpret(const char* inputExpression) {
-    input = inputExpression;
-    position = 0;
-
-    nextToken();  
-    do {
-        if (currentToken.type == Printf) {
-            printStatement();  
-        } else {
-            expression();  
-        }
-        nextToken();  
-    } while (currentToken.type != Eof);
-}
-
-
-int main(int argc, char *argv[])
+Token createToken(TokenType type, const char *value)
 {
-    if (argc > 1 && strcmp(argv[1], "1") == 0) {
-        debugMode = 1;
+    Token token;
+    token.type = type;
+    token.value = strdup(value);
+    return token;
+}
+
+Token getNextToken()
+{
+    skipWhitespace();
+
+    char current_char = peek();
+
+    // End of input
+    if (current_char == '\0')
+    {
+        if (DEBUG) printf("Lexer: End of input\n");
+        return createToken(Eof, "");
     }
 
-    handleInput();
+    // Numbers
+    if (isdigit(current_char))
+    {
+        char buffer[256];
+        int i = 0;
+        while (isdigit(peek()))
+        {
+            buffer[i++] = peek();
+            advance();
+        }
+        buffer[i] = '\0';
+        if (DEBUG) printf("Lexer: Recognized number '%s'\n", buffer);
+        return createToken(Number, buffer);
+    }
 
-    return 0;
+    // Identifiers and keywords
+    if (isalpha(current_char))
+    {
+        char buffer[256];
+        int i = 0;
+        while (isalnum(peek()) || peek() == '_')
+        {
+            buffer[i++] = peek();
+            advance();
+        }
+        buffer[i] = '\0';
+
+        // Keywords
+        if (strcmp(buffer, "if") == 0)
+        {
+            if (DEBUG) printf("Lexer: Recognized keyword 'if'\n");
+            return createToken(If, "if");
+        }
+        else if (strcmp(buffer, "else") == 0)
+        {
+            // Check for 'else if'
+            skipWhitespace();
+            if (strncmp(&input[position], "if", 2) == 0 && !isalnum(input[position + 2]))
+            {
+                // Recognize 'else if' as a single token
+                advance(); // 'i'
+                advance(); // 'f'
+                if (DEBUG) printf("Lexer: Recognized keyword 'else if'\n");
+                return createToken(ElseIf, "else if");
+            }
+            else
+            {
+                if (DEBUG) printf("Lexer: Recognized keyword 'else'\n");
+                return createToken(Else, "else");
+            }
+        }
+        else if (strcmp(buffer, "print") == 0)
+        {
+            if (DEBUG) printf("Lexer: Recognized keyword 'print'\n");
+            return createToken(Print, "print");
+        }
+        else
+        {
+            if (DEBUG) printf("Lexer: Recognized identifier '%s'\n", buffer);
+            return createToken(Identifier, buffer);
+        }
+    }
+
+    // Operators and symbols
+    switch (current_char)
+    {
+    case '+':
+        advance();
+        if (peek() == '+')
+        {
+            advance();
+            if (DEBUG) printf("Lexer: Recognized operator '++'\n");
+            return createToken(Inc, "++");
+        }
+        else
+        {
+            if (DEBUG) printf("Lexer: Recognized operator '+'\n");
+            return createToken(Add, "+");
+        }
+    case '-':
+        advance();
+        if (peek() == '-')
+        {
+            advance();
+            if (DEBUG) printf("Lexer: Recognized operator '--'\n");
+            return createToken(Dec, "--");
+        }
+        else
+        {
+            if (DEBUG) printf("Lexer: Recognized operator '-'\n");
+            return createToken(Sub, "-");
+        }
+    case '*':
+        advance();
+        if (DEBUG) printf("Lexer: Recognized operator '*'\n");
+        return createToken(Mul, "*");
+    case '/':
+        advance();
+        if (DEBUG) printf("Lexer: Recognized operator '/'\n");
+        return createToken(Div, "/");
+    case '%':
+        advance();
+        if (DEBUG) printf("Lexer: Recognized operator '%%'\n");
+        return createToken(Mod, "%");
+    case '^':
+        advance();
+        if (DEBUG) printf("Lexer: Recognized operator '^'\n");
+        return createToken(Pow, "^");
+    case '=':
+        advance();
+        if (DEBUG) printf("Lexer: Recognized operator '='\n");
+        return createToken(Assign, "=");
+    case '<':
+        advance();
+        if (peek() == '=')
+        {
+            advance();
+            if (DEBUG) printf("Lexer: Recognized operator '<='\n");
+            return createToken(Le, "<=");
+        }
+        else
+        {
+            if (DEBUG) printf("Lexer: Recognized operator '<'\n");
+            return createToken(Lt, "<");
+        }
+    case '>':
+        advance();
+        if (peek() == '=')
+        {
+            advance();
+            if (DEBUG) printf("Lexer: Recognized operator '>='\n");
+            return createToken(Ge, ">=");
+        }
+        else
+        {
+            if (DEBUG) printf("Lexer: Recognized operator '>'\n");
+            return createToken(Gt, ">");
+        }
+    case '!':
+        advance();
+        if (peek() == '=')
+        {
+            advance();
+            if (DEBUG) printf("Lexer: Recognized operator '!='\n");
+            return createToken(Ne, "!=");
+        }
+        else
+        {
+            printf("Lexer Error: Unexpected character '!' without '='\n");
+            exit(1);
+        }
+    case '(':
+        advance();
+        if (DEBUG) printf("Lexer: Recognized symbol '('\n");
+        return createToken(Lparen, "(");
+    case ')':
+        advance();
+        if (DEBUG) printf("Lexer: Recognized symbol ')'\n");
+        return createToken(Rparen, ")");
+    case '{':
+        advance();
+        if (DEBUG) printf("Lexer: Recognized symbol '{'\n");
+        return createToken(Lbrace, "{");
+    case '}':
+        advance();
+        if (DEBUG) printf("Lexer: Recognized symbol '}'\n");
+        return createToken(Rbrace, "}");
+    default:
+        printf("Lexer Error: Unknown character '%c'\n", current_char);
+        exit(1);
+    }
+}
+
+void freeToken(Token token)
+{
+    free(token.value);
 }

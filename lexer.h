@@ -5,45 +5,59 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Define token types
+// Enable debugging by setting DEBUG to 1
+#define DEBUG 1
+
+// Definition of token types
 typedef enum
 {
-    Number = 0,     // 0-9
-    Identifier = 1, // a-z, A-Z
-    Add,            // '+'
-    Sub,            // '-'
-    Mul,            // '*'
-    Div,            // '/'
-    Mod,            // '%'
-    Inc,            // '++'
-    Dec,            // '--'
-    Pow,            // '^'
-    Lt,             // '<'
-    Le,             // '<='
-    Gt,             // '>'
-    Ge,             // '>='
-    Ne,             // '!='
-    Printf,
-    Eof,            // End of file
-    Lparen,         // '('
-    Rparen,         // ')'
-    Print,          // For the print command
-    Assign = 128,   // '='
-    Error = 129,    // Print error
+    // Single-character tokens
+    Number = 0,       // Numbers
+    Identifier = 1,   // Identifiers
+    Add = 2,          // '+'
+    Sub = 3,          // '-'
+    Mul = 4,          // '*'
+    Div = 5,          // '/'
+    Mod = 6,          // '%'
+    Inc = 7,          // '++'
+    Dec = 8,          // '--'
+    Pow = 9,          // '^'
+    Lt = 10,          // '<'
+    Le = 11,          // '<='
+    Gt = 12,          // '>'
+    Ge = 13,          // '>='
+    Ne = 14,          // '!='
+    Assign = 15,      // '='
+    // Keywords
+    If = 16,          // 'if'
+    Else = 17,        // 'else'
+    ElseIf = 18,      // 'else if'
+    Print = 19,       // 'print'
+    // Symbols
+    Lparen = 20,      // '('
+    Rparen = 21,      // ')'
+    Lbrace = 22,      // '{'
+    Rbrace = 23,      // '}'
+    Semicolon = 24,   // ';'
+    // Special tokens
+    Eof = 25,         // End of file
+    Error = 26        // Error
 } TokenType;
 
-// Define a token structure
+// Token structure
 typedef struct
 {
-    TokenType type;
-    char *value;
+    TokenType type; // Type of token
+    char *value;    // Value of token
 } Token;
 
-// Function prototypes
-Token createToken(TokenType type, const char *value);
+// Lexer functions
+void setInput(const char *inputStr);
+Token getNextToken();
+void freeToken(Token token);
 char peek();
 void advance();
-Token getNextToken();
-void ignoreSpaces();
+void skipWhitespace();
+Token createToken(TokenType type, const char *value);
 
 #endif

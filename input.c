@@ -1,63 +1,94 @@
-#include <stdio.h>
-#include <string.h>
-#include "lexer.h"
 #include "input.h"
+#include "lexer.h"
+#include "parser.h"
+#include <stdio.h>
 
-// Function to read and interpret a file line by line
-void interpretFile(const char* fileName) {
+void interpret(const char *inputExpression)
+{
+    setInput(inputExpression);
+    ASTNode *program = parseProgram();
+    if (DEBUG) printf("Interpreter: Parsed program successfully\n");
+    evaluateProgram(program);
+    if (DEBUG) printf("Interpreter: Evaluated AST successfully\n");
+    freeAST(program);
+}
+
+void interpretFile(const char *fileName)
+{
     FILE *file = fopen(fileName, "r");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         perror("Erreur lors de l'ouverture du fichier");
         return;
     }
-
-    char line[256];
-    while (fgets(line, sizeof(line), file)) {
-        line[strcspn(line, "\n")] = 0;  
-        interpret(line);  
+    char line[1024];
+    char *inputBuffer = NULL;
+    size_t inputSize = 0;
+    while (fgets(line, sizeof(line), file))
+    {
+        size_t len = strlen(line);
+        inputBuffer = realloc(inputBuffer, inputSize + len + 1);
+        strcpy(inputBuffer + inputSize, line);
+        inputSize += len;
     }
-
     fclose(file);
+
+    interpret(inputBuffer);
+
+    free(inputBuffer);
 }
 
-// Function for interactive REPL mode
-void interactiveMode() {
+void interactiveMode()
+{
     char inputLine[256];
-
     printf("Mode interactif. Tapez 'exit' pour quitter.\n");
-
-    while (1) {
+    while (1)
+    {
         printf("> ");
-        if (fgets(inputLine, sizeof(inputLine), stdin) == NULL) {
+        if (fgets(inputLine, sizeof(inputLine), stdin) == NULL)
+        {
             break;
         }
-
         inputLine[strcspn(inputLine, "\n")] = 0;
-
-        if (strcmp(inputLine, "exit") == 0) {
+        if (strcmp(inputLine, "exit") == 0)
+        {
             break;
         }
-
-        interpret(inputLine);  // Appel à la fonction interpret() du lexer
+        interpret(inputLine);
     }
 }
 
-// Function to handle input based on user's choice (file or interactive mode)
-void handleInput() {
+void handleInput()
+{
     int mode = 0;
-    
-    do {
+
+    do
+    {
         printf("Choisissez le mode d'exécution:\n");
         printf("1. Mode fichier\n");
         printf("2. Mode interactif\n");
         printf("Entrez votre choix (1 ou 2): ");
         scanf("%d", &mode);
-        getchar();  
+        getchar();
     } while (mode != 1 && mode != 2);
-    
-    if (mode == 1) {
-        interpretFile("code.txt");
-    } else if (mode == 2) {
+
+    if (mode == 1)
+    {
+        printf("Entrez le nom du fichier: ");
+        char fileName[256];
+        fgets(fileName, sizeof(fileName), stdin);
+        fileName[strcspn(fileName, "\n")] = 0;
+        interpretFile(fileName);
+    }
+    else if (mode == 2)
+    {
         interactiveMode();
     }
+}
+
+// Fonction principale
+int main()
+{
+    handleInput();
+    return 0;
 }

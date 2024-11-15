@@ -1,3 +1,7 @@
+.vscode
 /a.out
 /lexer.h.gch
 /parser.h.gch
+/input.h.gch
+interpreteur
+exe

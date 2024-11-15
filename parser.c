@@ -1,253 +1,434 @@
-/**
- * @file parser.c
- * @brief This file contains the implementation of a simple arithmetic expression parser.
- *
- * The parser supports basic arithmetic operations including addition, subtraction,
- * multiplication, division, and modulo. It uses recursive descent parsing to evaluate
- * expressions involving numbers and parentheses.
- *
- * The parser relies on the following external functions and types:
- *
- * - Token getNextToken(): Retrieves the next token from the input.
- * - TokenType: An enumeration representing the different types of tokens.
- * - Token: A structure representing a token, with fields for the token type and value.
- *
- * The parser reports syntax errors and exits the program if an unexpected token is encountered.
- */
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-#include <math.h>
 #include "parser.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
+// Current token
 Token currentToken;
 
-SymbolTableEntry symbolTable[100];  
-int symbolCount = 0;    
+// Symbol table
+SymbolTableEntry symbolTable[100];
+int symbolCount = 0;
 
+// Function prototypes
+void nextToken();
+void match(TokenType expected);
+ASTNode *parseStatement();
+ASTNode *parseBlock();
+ASTNode *parseExpression();
+ASTNode *parseTerm();
+ASTNode *parseFactor();
+ASTNode *parseIfStatement();
+ASTNode *parseAssignment();
+ASTNode *parsePrintStatement();
+int lookupVariable(const char *name);
+void assignVariable(const char *name, int value);
 
-// Search for a variable in the symbol table
-int lookupVariable(const char *name) {
-    printf("Looking for variable: %s\n", name);
-
-    for (int i = 0; i < symbolCount; i++) {
-        printf("Checking variable: %s with value: %d\n", symbolTable[i].identifier, symbolTable[i].value);
-        if (strcmp(symbolTable[i].identifier, name) == 0) {
-            // printf("Found variable: %s, Value: %d\n", name, symbolTable[i].value);
-            return symbolTable[i].value;
-        }
+// Parser entry point
+void evaluateProgram(ASTNode *node)
+{
+    while (node != NULL)
+    {
+        evaluateAST(node);
+        node = node->next;
     }
-
-    printf("Error: Variable %s not defined\n", name);
-    exit(1);
 }
 
-
-
-
-// Assign a value to a variable in the symbol table
-void assignVariable(const char *name, int value) {
-    for (int i = 0; i < symbolCount; i++) {
-        if (strcmp(symbolTable[i].identifier, name) == 0) {
-            symbolTable[i].value = value;
-            return;
-        }
-    }
-
-    if (symbolCount < 100) {
-        strncpy(symbolTable[symbolCount].identifier, name, 255);  
-        symbolTable[symbolCount].value = value;  
-        symbolCount++;  
-    } else {
-        printf("Error: Symbol table full\n");
-        exit(1);
-    }
-
-    // printf("Current symbol table:\n");
-    // for (int i = 0; i < symbolCount; i++) {
-    //     printf("Variable: %s, Value: %d\n", symbolTable[i].identifier, symbolTable[i].value);
-    // }
-}
-
-
-
-
-ASTNode* createNumberNode(int value) {
-    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = Number;
-    node->value = value;
-    node->left = node->right = NULL;
-    return node;
-}
-
-ASTNode* createOperatorNode(TokenType type, ASTNode* left, ASTNode* right) {
-    ASTNode* node = (ASTNode*)malloc(sizeof(ASTNode));
-    node->type = type;
-    node->value = 0;  
-    node->left = left;
-    node->right = right;
-    // printf("Created operator node: Type = %d, Left value = %d, Right value = %d\n", type, left->value, right->value); 
-    return node;
-}
-
-
-// Retrieves the next token
 void nextToken()
 {
     currentToken = getNextToken();
-    // printf("NextToken /// Current token in parser: Type = %d, Value = %s\n", currentToken.type, currentToken.value);  // Debug du token reçu par le parser
-
+    if (DEBUG) printf("Parser: Next token is '%s' of type %d\n", currentToken.value, currentToken.type);
 }
 
-// Matches the current token with the expected token
+// Match the current token with the expected token
 void match(TokenType expected)
 {
     if (currentToken.type == expected)
     {
+        if (DEBUG) printf("Parser: Matched token '%s'\n", currentToken.value);
         nextToken();
     }
     else
     {
-        printf("Syntax error: expected %d but got %d\n", expected, currentToken.type);
+        printf("Syntax Error: Expected token type %d, but got %d\n", expected, currentToken.type);
         exit(1);
     }
 }
 
-ASTNode* factor() {
-    ASTNode* node;
+ASTNode *parseProgram()
+{
+    if (DEBUG) printf("Parser: Starting to parse program\n");
+    nextToken();
+    ASTNode *statements = NULL;
+    ASTNode *lastStatement = NULL;
 
-    // printf("Factor ?????? Type = %d, Value = %s\n", currentToken.type, currentToken.value); 
+    while (currentToken.type != Eof)
+    {
+        ASTNode *stmt = parseStatement();
 
-    if (currentToken.type == Lparen) {
-        match(Lparen);  
-        node = expression(); 
-        match(Rparen);  
+        if (statements == NULL)
+        {
+            statements = stmt;
+        }
+        else
+        {
+            lastStatement->next = stmt;
+        }
+        lastStatement = stmt;
     }
-    else if (currentToken.type == Number) {
-        node = createNumberNode(atoi(currentToken.value));  
-        match(Number); 
-    }
-    else if (currentToken.type == Identifier) {
-        // printf("Entering Identifier block for: %s\n", currentToken.value);  
-        int value = lookupVariable(currentToken.value);  
-        node = createNumberNode(value);  
 
-        match(Identifier);  
+    if (DEBUG) printf("Parser: Finished parsing program\n");
+    return statements;
+}
 
-        return node;  
+ASTNode *parseStatement()
+{
+    if (DEBUG) printf("Parser: Parsing a statement\n");
+    ASTNode *node;
+
+    if (currentToken.type == If)
+    {
+        node = parseIfStatement();
     }
-    else {
-        printf("Unexpected token in factor: Type = %d, Value = %s\n", currentToken.type, currentToken.value);
+    else if (currentToken.type == Print)
+    {
+        node = parsePrintStatement();
+    }
+    else if (currentToken.type == Identifier)
+    {
+        node = parseAssignment();
+    }
+    else
+    {
+        printf("Syntax Error: Unexpected token '%s' of type %d\n", currentToken.value, currentToken.type);
         exit(1);
     }
 
     return node;
 }
 
-// Manages the multiplication, division and modulo operators
-ASTNode* termTail(ASTNode* lvalue)
+ASTNode *parseIfStatement()
 {
-    while (currentToken.type == Mul || currentToken.type == Div || currentToken.type == Mod)
+    if (DEBUG) printf("Parser: Parsing an if statement\n");
+    ASTNode *node = malloc(sizeof(ASTNode));
+    node->nodeType = IfNode;
+
+    match(If);
+    match(Lparen);
+    node->condition = parseExpression();
+    match(Rparen);
+
+    node->thenBranch = parseBlock();
+
+    if (currentToken.type == Else || currentToken.type == ElseIf)
     {
-        TokenType op = currentToken.type;
-        match(op);
-        ASTNode* rvalue = factor();
-        lvalue = createOperatorNode(op, lvalue, rvalue);  
-    }
-    return lvalue;
-}
-
-// This function calculates the value of a term, which is defined as a factor (a number or a parenthesis)
-// possibly followed by multiplication or division.
-ASTNode* term()
-{
-    // printf("Entering term with token: Type = %d, Value = %s\n", currentToken.type, currentToken.value);
-    ASTNode* lvalue = factor();;
-    return termTail(lvalue);
-}
-
-// Manages the addition and subtraction operators
-ASTNode* exprTail(ASTNode* lvalue)
-{
-    while (currentToken.type == Add || currentToken.type == Sub) {
-        TokenType op = currentToken.type;
-        printf("Found operator: %d\n", op);
-        match(op);
-        ASTNode* rvalue = term(); 
-        lvalue = createOperatorNode(op, lvalue, rvalue);  
-    }
-    return lvalue;
-}
-
-// This function calculates the value of an expression,
-// which is defined as a term possibly followed by an addition or subtraction.
-ASTNode* expression() {
-
-    if (currentToken.type == Identifier) {
-        char varName[256];
-        strcpy(varName, currentToken.value); 
-        match(Identifier);  
-
-        if (currentToken.type == Assign) {
-            match(Assign);  
-            
-            ASTNode* exprNode = term();  
-            exprNode = exprTail(exprNode);  
-            
-            int value = evaluateAST(exprNode); 
-            assignVariable(varName, value);  
-            
-            return createNumberNode(value);  
-        } else {
-            int value = lookupVariable(varName);  
-            return createNumberNode(value);  
+        if (currentToken.type == ElseIf)
+        {
+            if (DEBUG) printf("Parser: Parsing else if clause\n");
+            match(ElseIf);
+            node->elseBranch = parseIfStatement();
+        }
+        else
+        {
+            if (DEBUG) printf("Parser: Parsing else clause\n");
+            match(Else);
+            node->elseBranch = parseBlock();
         }
     }
-
-    ASTNode* lvalue = term();
-    return exprTail(lvalue);
-}
-
-
-
-void printStatement() {
-    match(Printf);  
-    match(Lparen);  
-
-
-    ASTNode* value = expression();
-
-    match(Rparen);  
-
-    int result = evaluateAST(value);  
-    printf("%d\n", result); 
-
-    free(value);  
-}
-
-
-
-
-
-
-int evaluateAST(ASTNode* node) {
-    if (node->type == Number) {
-        return node->value;  
+    else
+    {
+        node->elseBranch = NULL;
     }
 
-    int leftValue = evaluateAST(node->left);
-    int rightValue = evaluateAST(node->right);
+    return node;
+}
 
-    // printf("Evaluating: Left = %d, Right = %d, Operator = %d\n", leftValue, rightValue, node->type);
+ASTNode *parseBlock()
+{
+    if (DEBUG) printf("Parser: Parsing a block\n");
+    match(Lbrace); // {
+    ASTNode *statements = NULL;
+    ASTNode *lastStatement = NULL;
 
+    while (currentToken.type != Rbrace && currentToken.type != Eof)
+    {
+        ASTNode *stmt = parseStatement();
 
-    switch (node->type) {
-        case Add: return leftValue + rightValue;
-        case Sub: return leftValue - rightValue;
-        case Mul: return leftValue * rightValue;
-        case Div: return leftValue / rightValue;
-        case Mod: return leftValue % rightValue;
-        case Pow: return pow(leftValue, rightValue);
-        default: printf("Unknown operator: %d\n", node->type); exit(1);
+        if (statements == NULL)
+        {
+            statements = stmt;
+        }
+        else
+        {
+            lastStatement->next = stmt;
+        }
+        lastStatement = stmt;
     }
+
+    match(Rbrace); // }
+    return statements;
+}
+
+ASTNode *parseAssignment()
+{
+    if (DEBUG) printf("Parser: Parsing an assignment\n");
+    ASTNode *node = malloc(sizeof(ASTNode));
+    node->nodeType = AssignmentNode;
+    strcpy(node->identifier, currentToken.value);
+    match(Identifier);
+    match(Assign);
+    node->right = parseExpression();
+    return node;
+}
+
+ASTNode *parsePrintStatement()
+{
+    if (DEBUG) printf("Parser: Parsing a print statement\n");
+    ASTNode *node = malloc(sizeof(ASTNode));
+    node->nodeType = PrintNode;
+    match(Print);
+    match(Lparen);
+    node->left = parseExpression();
+    match(Rparen);
+    return node;
+}
+
+ASTNode *parseExpression()
+{
+    if (DEBUG) printf("Parser: Parsing an expression\n");
+    ASTNode *node = parseTerm();
+
+    // Parse binary operators
+    while (currentToken.type == Add || currentToken.type == Sub ||
+           currentToken.type == Lt || currentToken.type == Le ||
+           currentToken.type == Gt || currentToken.type == Ge ||
+           currentToken.type == Ne)
+    {
+        if (DEBUG) printf("Parser: Parsing binary operator '%s'\n", currentToken.value);
+        ASTNode *temp = malloc(sizeof(ASTNode));
+        temp->nodeType = BinaryOpNode;
+        temp->tokenType = currentToken.type;
+        temp->left = node;
+        match(currentToken.type);
+        temp->right = parseTerm();
+        node = temp;
+    }
+
+    return node;
+}
+
+ASTNode *parseTerm()
+{
+    if (DEBUG) printf("Parser: Parsing a term\n");
+    ASTNode *node = parseFactor();
+
+    while (currentToken.type == Mul || currentToken.type == Div || currentToken.type == Mod)
+    {
+        if (DEBUG) printf("Parser: Parsing binary operator '%s'\n", currentToken.value);
+        ASTNode *temp = malloc(sizeof(ASTNode));
+        temp->nodeType = BinaryOpNode;
+        temp->tokenType = currentToken.type;
+        temp->left = node;
+        match(currentToken.type);
+        temp->right = parseFactor();
+        node = temp;
+    }
+
+    return node;
+}
+
+ASTNode *parseFactor()
+{
+    if (DEBUG) printf("Parser: Parsing a factor\n");
+    ASTNode *node;
+
+    if (currentToken.type == Number)
+    {
+        if (DEBUG) printf("Parser: Recognized number '%s'\n", currentToken.value);
+        node = malloc(sizeof(ASTNode));
+        node->nodeType = NumberNode;
+        node->value = atoi(currentToken.value);
+        match(Number);
+    }
+    else if (currentToken.type == Identifier)
+    {
+        if (DEBUG) printf("Parser: Recognized identifier '%s'\n", currentToken.value);
+        node = malloc(sizeof(ASTNode));
+        node->nodeType = IdentifierNode;
+        strcpy(node->identifier, currentToken.value);
+        match(Identifier);
+    }
+    else if (currentToken.type == Lparen)
+    {
+        match(Lparen);
+        node = parseExpression();
+        match(Rparen);
+    }
+    else
+    {
+        printf("Syntax Error: Unexpected token '%s'\n", currentToken.value);
+        exit(1);
+    }
+
+    return node;
+}
+
+int evaluateAST(ASTNode *node)
+{
+    if (node == NULL)
+    {
+        return 0;
+    }
+
+    switch (node->nodeType)
+    {
+    case NumberNode:
+        if (DEBUG) printf("Evaluator: Number node with value %d\n", node->value);
+        return node->value;
+
+    case IdentifierNode:
+    {
+        int value = lookupVariable(node->identifier);
+        if (DEBUG) printf("Evaluator: Identifier '%s' has value %d\n", node->identifier, value);
+        return value;
+    }
+
+    case BinaryOpNode:
+    {
+        int leftValue = evaluateAST(node->left);
+        int rightValue = evaluateAST(node->right);
+        int result;
+        if (DEBUG) printf("Evaluator: Performing binary operation '%d' on %d and %d\n", node->tokenType, leftValue, rightValue);
+        switch (node->tokenType)
+        {
+            case Add:
+                result = leftValue + rightValue;
+                break;
+            case Sub:
+                result = leftValue - rightValue;
+                break;
+            case Mul:
+                result = leftValue * rightValue;
+                break;
+            case Div:
+                result = leftValue / rightValue;
+                break;
+            case Mod:
+                result = leftValue % rightValue;
+                break;
+            case Lt:
+                result = leftValue < rightValue;
+                break;
+            case Le:
+                result = leftValue <= rightValue;
+                break;
+            case Gt:
+                result = leftValue > rightValue;
+                break;
+            case Ge:
+                result = leftValue >= rightValue;
+                break;
+            case Ne:
+                result = leftValue != rightValue;
+                break;
+            default:
+                printf("Runtime Error: Unknown binary operator '%d'\n", node->tokenType);
+                exit(1);
+        }
+        return result;
+    }
+
+    case AssignmentNode:
+    {
+        int value = evaluateAST(node->right);
+        assignVariable(node->identifier, value);
+        if (DEBUG) printf("Evaluator: Assigned value %d to variable '%s'\n", value, node->identifier);
+        return value;
+    }
+
+    case PrintNode:
+    {
+        int value = evaluateAST(node->left);
+        printf("%d\n", value);
+        if (DEBUG) printf("Evaluator: Printed value %d\n", value);
+        return value;
+    }
+
+    case IfNode:
+    {
+        int conditionResult = evaluateAST(node->condition);
+        if (DEBUG) printf("Evaluator: If condition evaluated to %d\n", conditionResult);
+        if (conditionResult)
+        {
+            if (DEBUG) printf("Evaluator: Executing 'then' branch\n");
+            evaluateAST(node->thenBranch);
+        }
+        else if (node->elseBranch != NULL)
+        {
+            if (DEBUG) printf("Evaluator: Executing 'else' branch\n");
+            evaluateAST(node->elseBranch);
+        }
+        return 0;
+    }
+
+    default:
+    {
+        printf("Runtime Error: Unknown AST node type '%d'\n", node->nodeType);
+        exit(1);
+    }
+    }
+}
+
+int lookupVariable(const char *name)
+{
+    for (int i = 0; i < symbolCount; i++)
+    {
+        if (strcmp(symbolTable[i].identifier, name) == 0)
+        {
+            if (DEBUG) printf("Evaluator: Variable '%s' found with value %d\n", name, symbolTable[i].value);
+            return symbolTable[i].value;
+        }
+    }
+    printf("Runtime Error: Undefined variable '%s'\n", name);
+    exit(1);
+}
+
+void assignVariable(const char *name, int value)
+{
+    for (int i = 0; i < symbolCount; i++)
+    {
+        if (strcmp(symbolTable[i].identifier, name) == 0)
+        {
+            symbolTable[i].value = value;
+            if (DEBUG) printf("Evaluator: Updated variable '%s' with new value %d\n", name, value);
+            return;
+        }
+    }
+    if (symbolCount < 100)
+    {
+        strcpy(symbolTable[symbolCount].identifier, name);
+        symbolTable[symbolCount].value = value;
+        symbolCount++;
+        if (DEBUG) printf("Evaluator: Created new variable '%s' with value %d\n", name, value);
+    }
+    else
+    {
+        printf("Runtime Error: Symbol table full\n");
+        exit(1);
+    }
+}
+
+void freeAST(ASTNode *node)
+{
+    if (node == NULL)
+        return;
+
+    freeAST(node->left);
+    freeAST(node->right);
+    freeAST(node->condition);
+    freeAST(node->thenBranch);
+    freeAST(node->elseBranch);
+    freeAST(node->next);
+
+    free(node);
 }
