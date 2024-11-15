@@ -13,12 +13,15 @@ int symbolCount = 0;
 // Function prototypes
 void nextToken();
 void match(TokenType expected);
+const char *tokenTypeToString(TokenType type);
 ASTNode *parseStatement();
 ASTNode *parseBlock();
 ASTNode *parseExpression();
 ASTNode *parseTerm();
 ASTNode *parseFactor();
 ASTNode *parseIfStatement();
+ASTNode *parseForStatement();
+ASTNode *parseWhileStatement();
 ASTNode *parseAssignment();
 ASTNode *parsePrintStatement();
 int lookupVariable(const char *name);
@@ -37,7 +40,8 @@ void evaluateProgram(ASTNode *node)
 void nextToken()
 {
     currentToken = getNextToken();
-    if (DEBUG) printf("Parser: Next token is '%s' of type %d\n", currentToken.value, currentToken.type);
+    if (DEBUG)
+        printf("Parser: Next token is '%s' of type %d\n", currentToken.value, currentToken.type);
 }
 
 // Match the current token with the expected token
@@ -45,19 +49,42 @@ void match(TokenType expected)
 {
     if (currentToken.type == expected)
     {
-        if (DEBUG) printf("Parser: Matched token '%s'\n", currentToken.value);
+        if (DEBUG)
+            printf("Parser: Matched token '%s'\n", currentToken.value);
         nextToken();
     }
     else
     {
-        printf("Syntax Error: Expected token type %d, but got %d\n", expected, currentToken.type);
+        printf("Syntax Error: Expected '%s' but found '%s'\n", tokenTypeToString(expected), currentToken.value);
         exit(1);
+    }
+}
+
+const char *tokenTypeToString(TokenType type)
+{
+    switch (type)
+    {
+    case Semicolon:
+        return ";";
+    case Lparen:
+        return "(";
+    case Rparen:
+        return ")";
+    case Identifier:
+        return "identifier";
+    case Number:
+        return "number";
+    case Assign:
+        return "=";
+    default:
+        return "token";
     }
 }
 
 ASTNode *parseProgram()
 {
-    if (DEBUG) printf("Parser: Starting to parse program\n");
+    if (DEBUG)
+        printf("Parser: Starting to parse program\n");
     nextToken();
     ASTNode *statements = NULL;
     ASTNode *lastStatement = NULL;
@@ -77,26 +104,38 @@ ASTNode *parseProgram()
         lastStatement = stmt;
     }
 
-    if (DEBUG) printf("Parser: Finished parsing program\n");
+    if (DEBUG)
+        printf("Parser: Finished parsing program\n");
     return statements;
 }
 
 ASTNode *parseStatement()
 {
-    if (DEBUG) printf("Parser: Parsing a statement\n");
+    if (DEBUG)
+        printf("Parser: Parsing a statement\n");
     ASTNode *node;
 
     if (currentToken.type == If)
     {
         node = parseIfStatement();
     }
+    else if (currentToken.type == For)
+    {
+        node = parseForStatement();
+    }
+    else if (currentToken.type == While)
+    {
+        node = parseWhileStatement();
+    }
     else if (currentToken.type == Print)
     {
         node = parsePrintStatement();
+        match(Semicolon);
     }
     else if (currentToken.type == Identifier)
     {
         node = parseAssignment();
+        match(Semicolon);
     }
     else
     {
@@ -109,7 +148,8 @@ ASTNode *parseStatement()
 
 ASTNode *parseIfStatement()
 {
-    if (DEBUG) printf("Parser: Parsing an if statement\n");
+    if (DEBUG)
+        printf("Parser: Parsing an if statement\n");
     ASTNode *node = malloc(sizeof(ASTNode));
     node->nodeType = IfNode;
 
@@ -124,13 +164,15 @@ ASTNode *parseIfStatement()
     {
         if (currentToken.type == ElseIf)
         {
-            if (DEBUG) printf("Parser: Parsing else if clause\n");
+            if (DEBUG)
+                printf("Parser: Parsing else if clause\n");
             match(ElseIf);
             node->elseBranch = parseIfStatement();
         }
         else
         {
-            if (DEBUG) printf("Parser: Parsing else clause\n");
+            if (DEBUG)
+                printf("Parser: Parsing else clause\n");
             match(Else);
             node->elseBranch = parseBlock();
         }
@@ -143,10 +185,56 @@ ASTNode *parseIfStatement()
     return node;
 }
 
+ASTNode *parseForStatement()
+{
+    if (DEBUG)
+        printf("Parser: Parsing a for statement\n");
+    ASTNode *node = malloc(sizeof(ASTNode));
+    node->nodeType = ForNode;
+
+    match(For);
+    match(Lparen);
+
+    // Init
+    node->init = parseAssignment();
+    match(Semicolon);
+
+    // Condition
+    node->condition = parseExpression();
+    match(Semicolon);
+
+    // Increment
+    node->increment = parseAssignment();
+    match(Rparen);
+
+    node->body = parseBlock();
+
+    return node;
+}
+
+ASTNode *parseWhileStatement()
+{
+    if (DEBUG)
+        printf("Parser: Parsing a while statement\n");
+    ASTNode *node = malloc(sizeof(ASTNode));
+    node->nodeType = WhileNode;
+
+    match(While);
+    match(Lparen);
+    node->condition = parseExpression();
+    match(Rparen);
+
+    node->body = parseBlock();
+
+    return node;
+}
+
 ASTNode *parseBlock()
 {
-    if (DEBUG) printf("Parser: Parsing a block\n");
+    if (DEBUG)
+        printf("Parser: Parsing a block\n");
     match(Lbrace); // {
+
     ASTNode *statements = NULL;
     ASTNode *lastStatement = NULL;
 
@@ -166,12 +254,14 @@ ASTNode *parseBlock()
     }
 
     match(Rbrace); // }
+
     return statements;
 }
 
 ASTNode *parseAssignment()
 {
-    if (DEBUG) printf("Parser: Parsing an assignment\n");
+    if (DEBUG)
+        printf("Parser: Parsing an assignment\n");
     ASTNode *node = malloc(sizeof(ASTNode));
     node->nodeType = AssignmentNode;
     strcpy(node->identifier, currentToken.value);
@@ -183,7 +273,8 @@ ASTNode *parseAssignment()
 
 ASTNode *parsePrintStatement()
 {
-    if (DEBUG) printf("Parser: Parsing a print statement\n");
+    if (DEBUG)
+        printf("Parser: Parsing a print statement\n");
     ASTNode *node = malloc(sizeof(ASTNode));
     node->nodeType = PrintNode;
     match(Print);
@@ -195,7 +286,8 @@ ASTNode *parsePrintStatement()
 
 ASTNode *parseExpression()
 {
-    if (DEBUG) printf("Parser: Parsing an expression\n");
+    if (DEBUG)
+        printf("Parser: Parsing an expression\n");
     ASTNode *node = parseTerm();
 
     // Parse binary operators
@@ -204,7 +296,8 @@ ASTNode *parseExpression()
            currentToken.type == Gt || currentToken.type == Ge ||
            currentToken.type == Ne)
     {
-        if (DEBUG) printf("Parser: Parsing binary operator '%s'\n", currentToken.value);
+        if (DEBUG)
+            printf("Parser: Parsing binary operator '%s'\n", currentToken.value);
         ASTNode *temp = malloc(sizeof(ASTNode));
         temp->nodeType = BinaryOpNode;
         temp->tokenType = currentToken.type;
@@ -219,12 +312,14 @@ ASTNode *parseExpression()
 
 ASTNode *parseTerm()
 {
-    if (DEBUG) printf("Parser: Parsing a term\n");
+    if (DEBUG)
+        printf("Parser: Parsing a term\n");
     ASTNode *node = parseFactor();
 
     while (currentToken.type == Mul || currentToken.type == Div || currentToken.type == Mod)
     {
-        if (DEBUG) printf("Parser: Parsing binary operator '%s'\n", currentToken.value);
+        if (DEBUG)
+            printf("Parser: Parsing binary operator '%s'\n", currentToken.value);
         ASTNode *temp = malloc(sizeof(ASTNode));
         temp->nodeType = BinaryOpNode;
         temp->tokenType = currentToken.type;
@@ -239,12 +334,14 @@ ASTNode *parseTerm()
 
 ASTNode *parseFactor()
 {
-    if (DEBUG) printf("Parser: Parsing a factor\n");
+    if (DEBUG)
+        printf("Parser: Parsing a factor\n");
     ASTNode *node;
 
     if (currentToken.type == Number)
     {
-        if (DEBUG) printf("Parser: Recognized number '%s'\n", currentToken.value);
+        if (DEBUG)
+            printf("Parser: Recognized number '%s'\n", currentToken.value);
         node = malloc(sizeof(ASTNode));
         node->nodeType = NumberNode;
         node->value = atoi(currentToken.value);
@@ -252,7 +349,8 @@ ASTNode *parseFactor()
     }
     else if (currentToken.type == Identifier)
     {
-        if (DEBUG) printf("Parser: Recognized identifier '%s'\n", currentToken.value);
+        if (DEBUG)
+            printf("Parser: Recognized identifier '%s'\n", currentToken.value);
         node = malloc(sizeof(ASTNode));
         node->nodeType = IdentifierNode;
         strcpy(node->identifier, currentToken.value);
@@ -283,13 +381,15 @@ int evaluateAST(ASTNode *node)
     switch (node->nodeType)
     {
     case NumberNode:
-        if (DEBUG) printf("Evaluator: Number node with value %d\n", node->value);
+        if (DEBUG)
+            printf("Evaluator: Number node with value %d\n", node->value);
         return node->value;
 
     case IdentifierNode:
     {
         int value = lookupVariable(node->identifier);
-        if (DEBUG) printf("Evaluator: Identifier '%s' has value %d\n", node->identifier, value);
+        if (DEBUG)
+            printf("Evaluator: Identifier '%s' has value %d\n", node->identifier, value);
         return value;
     }
 
@@ -298,42 +398,43 @@ int evaluateAST(ASTNode *node)
         int leftValue = evaluateAST(node->left);
         int rightValue = evaluateAST(node->right);
         int result;
-        if (DEBUG) printf("Evaluator: Performing binary operation '%d' on %d and %d\n", node->tokenType, leftValue, rightValue);
+        if (DEBUG)
+            printf("Evaluator: Performing binary operation '%d' on %d and %d\n", node->tokenType, leftValue, rightValue);
         switch (node->tokenType)
         {
-            case Add:
-                result = leftValue + rightValue;
-                break;
-            case Sub:
-                result = leftValue - rightValue;
-                break;
-            case Mul:
-                result = leftValue * rightValue;
-                break;
-            case Div:
-                result = leftValue / rightValue;
-                break;
-            case Mod:
-                result = leftValue % rightValue;
-                break;
-            case Lt:
-                result = leftValue < rightValue;
-                break;
-            case Le:
-                result = leftValue <= rightValue;
-                break;
-            case Gt:
-                result = leftValue > rightValue;
-                break;
-            case Ge:
-                result = leftValue >= rightValue;
-                break;
-            case Ne:
-                result = leftValue != rightValue;
-                break;
-            default:
-                printf("Runtime Error: Unknown binary operator '%d'\n", node->tokenType);
-                exit(1);
+        case Add:
+            result = leftValue + rightValue;
+            break;
+        case Sub:
+            result = leftValue - rightValue;
+            break;
+        case Mul:
+            result = leftValue * rightValue;
+            break;
+        case Div:
+            result = leftValue / rightValue;
+            break;
+        case Mod:
+            result = leftValue % rightValue;
+            break;
+        case Lt:
+            result = leftValue < rightValue;
+            break;
+        case Le:
+            result = leftValue <= rightValue;
+            break;
+        case Gt:
+            result = leftValue > rightValue;
+            break;
+        case Ge:
+            result = leftValue >= rightValue;
+            break;
+        case Ne:
+            result = leftValue != rightValue;
+            break;
+        default:
+            printf("Runtime Error: Unknown binary operator '%d'\n", node->tokenType);
+            exit(1);
         }
         return result;
     }
@@ -342,33 +443,68 @@ int evaluateAST(ASTNode *node)
     {
         int value = evaluateAST(node->right);
         assignVariable(node->identifier, value);
-        if (DEBUG) printf("Evaluator: Assigned value %d to variable '%s'\n", value, node->identifier);
-        return value;
-    }
-
-    case PrintNode:
-    {
-        int value = evaluateAST(node->left);
-        printf("%d\n", value);
-        if (DEBUG) printf("Evaluator: Printed value %d\n", value);
+        if (DEBUG)
+            printf("Evaluator: Assigned value %d to variable '%s'\n", value, node->identifier);
         return value;
     }
 
     case IfNode:
     {
         int conditionResult = evaluateAST(node->condition);
-        if (DEBUG) printf("Evaluator: If condition evaluated to %d\n", conditionResult);
+        if (DEBUG)
+            printf("Evaluator: If condition evaluated to %d\n", conditionResult);
         if (conditionResult)
         {
-            if (DEBUG) printf("Evaluator: Executing 'then' branch\n");
+            if (DEBUG)
+                printf("Evaluator: Executing 'then' branch\n");
             evaluateAST(node->thenBranch);
         }
         else if (node->elseBranch != NULL)
         {
-            if (DEBUG) printf("Evaluator: Executing 'else' branch\n");
+            if (DEBUG)
+                printf("Evaluator: Executing 'else' branch\n");
             evaluateAST(node->elseBranch);
         }
         return 0;
+    }
+
+    case ForNode:
+    {
+        if (DEBUG)
+            printf("Evaluator: Evaluating a for loop\n");
+        for (
+            evaluateAST(node->init);
+            evaluateAST(node->condition);
+            evaluateAST(node->increment))
+        {
+            evaluateAST(node->body);
+        }
+        return 0;
+    }
+
+    case WhileNode:
+    {
+        if (DEBUG)
+            printf("Evaluator: Evaluating a while loop\n");
+        while (evaluateAST(node->condition))
+        {
+            ASTNode *bodyNode = node->body;
+            while (bodyNode != NULL)
+            {
+                evaluateAST(bodyNode);
+                bodyNode = bodyNode->next;
+            }
+        }
+        break;
+    }
+
+    case PrintNode:
+    {
+        int value = evaluateAST(node->left);
+        printf("%d\n", value);
+        if (DEBUG)
+            printf("Evaluator: Printed value %d\n", value);
+        return value;
     }
 
     default:
@@ -377,6 +513,14 @@ int evaluateAST(ASTNode *node)
         exit(1);
     }
     }
+
+    // Evaluate the next statement unless, it's a loop
+    if (node->nodeType != WhileNode && node->nodeType != ForNode && node->next != NULL)
+    {
+        evaluateAST(node->next);
+    }
+
+    return 0;
 }
 
 int lookupVariable(const char *name)
@@ -385,7 +529,8 @@ int lookupVariable(const char *name)
     {
         if (strcmp(symbolTable[i].identifier, name) == 0)
         {
-            if (DEBUG) printf("Evaluator: Variable '%s' found with value %d\n", name, symbolTable[i].value);
+            if (DEBUG)
+                printf("Evaluator: Variable '%s' found with value %d\n", name, symbolTable[i].value);
             return symbolTable[i].value;
         }
     }
@@ -400,7 +545,8 @@ void assignVariable(const char *name, int value)
         if (strcmp(symbolTable[i].identifier, name) == 0)
         {
             symbolTable[i].value = value;
-            if (DEBUG) printf("Evaluator: Updated variable '%s' with new value %d\n", name, value);
+            if (DEBUG)
+                printf("Evaluator: Updated variable '%s' with new value %d\n", name, value);
             return;
         }
     }
@@ -409,7 +555,8 @@ void assignVariable(const char *name, int value)
         strcpy(symbolTable[symbolCount].identifier, name);
         symbolTable[symbolCount].value = value;
         symbolCount++;
-        if (DEBUG) printf("Evaluator: Created new variable '%s' with value %d\n", name, value);
+        if (DEBUG)
+            printf("Evaluator: Created new variable '%s' with value %d\n", name, value);
     }
     else
     {
@@ -428,6 +575,9 @@ void freeAST(ASTNode *node)
     freeAST(node->condition);
     freeAST(node->thenBranch);
     freeAST(node->elseBranch);
+    freeAST(node->body);
+    freeAST(node->init);
+    freeAST(node->increment);
     freeAST(node->next);
 
     free(node);
