@@ -4,4 +4,4 @@ c = 0;
 if (a < b) {
     c = 3;
 }
-print(c);
+print(c); // 3

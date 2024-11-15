@@ -89,7 +89,7 @@ void handleInput()
     }
 }
 
-// Fonction principale
+// Main function
 int main()
 {
     handleInput();

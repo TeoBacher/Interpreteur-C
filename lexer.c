@@ -32,6 +32,15 @@ void skipWhitespace()
     }
 }
 
+void skipComment()
+{
+    // Skip until end of line
+    while (peek() != '\n' && peek() != '\0' && peek() != '\r')
+    {
+        advance();
+    }
+}
+
 Token createToken(TokenType type, const char *value)
 {
     Token token;
@@ -175,9 +184,18 @@ Token getNextToken()
         return createToken(Mul, "*");
     case '/':
         advance();
-        if (DEBUG)
-            printf("Lexer: Recognized operator '/'\n");
-        return createToken(Div, "/");
+        if (peek() == '/')
+        {
+            advance();
+            skipComment();
+            return getNextToken();
+        }
+        else
+        {
+            if (DEBUG)
+                printf("Lexer: Recognized operator '/'\n");
+            return createToken(Div, "/");
+        }
     case '%':
         advance();
         if (DEBUG)
