@@ -6,7 +6,7 @@
 #include <string.h>
 
 // Enable debugging by setting DEBUG to 1
-#define DEBUG 0
+#define DEBUG 1
 
 // Definition of token types
 typedef enum
@@ -19,9 +19,9 @@ typedef enum
     Mul = 4,        // '*'
     Div = 5,        // '/'
     Mod = 6,        // '%'
-    Inc = 7,        // '++'
-    Dec = 8,        // '--'
-    Pow = 9,        // '^'
+    Inc = 7,        // '++' // TODO
+    Dec = 8,        // '--' // TODO
+    Pow = 9,        // '^' // TODO
     Lt = 10,        // '<'
     Le = 11,        // '<='
     Gt = 12,        // '>'
@@ -61,5 +61,6 @@ char peek();
 void advance();
 void skipWhitespace();
 Token createToken(TokenType type, const char *value);
+Token peekNextToken();
 
 #endif
