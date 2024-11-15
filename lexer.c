@@ -68,23 +68,29 @@ Token getNextToken()
         return createToken(Number, buffer);
     }
     
-    // Char literal
     
-// Char literal
-if (current_char == '\'') {
-    advance();
-    char charValue = peek();  // Récupérer le caractère
-    advance();
-    if (peek() == '\'') {  // Vérifier pour le guillemet de fin
+    // Char literal
+    if (current_char == '\'') {  
         advance();
-        char buffer[2] = {charValue, '\0'};  // Chaîne de caractères d'un seul caractère
-        if (DEBUG) printf("Lexer: Recognized char '%c'\n", charValue);
-        return createToken(StringLiteral, buffer);  // Retourner un StringLiteral
-    } else {
-        printf("Lexer Error: Unterminated char literal\n");
-        exit(1);
+        char buffer[256]; 
+        int i = 0;
+
+    while (peek() != '\'' && peek() != '\0' && i < (int)(sizeof(buffer) - 1)) {
+            buffer[i++] = peek();
+            advance();
+        }
+
+        if (peek() == '\'') {
+            buffer[i] = '\0'; 
+            advance();
+            if (DEBUG) printf("Lexer: Recognized char literal (as string) '%s'\n", buffer);
+            return createToken(StringLiteral, buffer);  // Retourner une chaîne de caractères
+        } else {
+            printf("Lexer Error: Unterminated char literal\n");
+            exit(1);
+        }
     }
-}
+
 
 
     // Identifiers and keywords

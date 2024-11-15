@@ -94,13 +94,13 @@ ASTNode *parseStatement() {
     if (DEBUG) printf("Parser: Parsing a statement\n");
     ASTNode *node;
 
-    if (currentToken.type == IntKeyword) {  // Pour les entiers
+    if (currentToken.type == IntKeyword) { 
         nextToken();
-        node = parseAssignment(TYPE_INT);  // Passe TYPE_INT
+        node = parseAssignment(TYPE_INT);  
     }
-    else if (currentToken.type == CharKeyword) {  // Pour les caractères
+    else if (currentToken.type == CharKeyword) {  
         nextToken();
-        node = parseAssignment(TYPE_CHAR);  // Passe TYPE_CHAR
+        node = parseAssignment(TYPE_CHAR);  
     }
     else if (currentToken.type == If) {
         node = parseIfStatement();
@@ -109,7 +109,7 @@ ASTNode *parseStatement() {
         node = parsePrintStatement();
     }
     else if (currentToken.type == Identifier) {
-        node = parseAssignment(TYPE_INT);  // Supposons `int` par défaut pour les identifiants sans mot-clé
+        node = parseAssignment(TYPE_INT);  
     }
     else {
         printf("Syntax Error: Unexpected token '%s' of type %d\n", currentToken.value, currentToken.type);
@@ -207,9 +207,8 @@ void assignVariableString(const char *name, VariableType type, const char *value
     for (int i = 0; i < symbolCount; i++) {
         if (strcmp(symbolTable[i].identifier, name) == 0) {
             symbolTable[i].type = type;
-            // Assigner la chaîne, même si elle ne contient qu'un seul caractère
             strncpy(symbolTable[i].charValue, value, sizeof(symbolTable[i].charValue) - 1);
-            symbolTable[i].charValue[sizeof(symbolTable[i].charValue) - 1] = '\0';  // Ajouter la fin de chaîne
+            symbolTable[i].charValue[sizeof(symbolTable[i].charValue) - 1] = '\0';  
             return;
         }
     }
@@ -217,9 +216,8 @@ void assignVariableString(const char *name, VariableType type, const char *value
     if (symbolCount < 100) {
         strcpy(symbolTable[symbolCount].identifier, name);
         symbolTable[symbolCount].type = type;
-        // Assigner la chaîne, même si elle ne contient qu'un seul caractère
         strncpy(symbolTable[symbolCount].charValue, value, sizeof(symbolTable[symbolCount].charValue) - 1);
-        symbolTable[symbolCount].charValue[sizeof(symbolTable[symbolCount].charValue) - 1] = '\0';  // Ajouter la fin de chaîne
+        symbolTable[symbolCount].charValue[sizeof(symbolTable[symbolCount].charValue) - 1] = '\0';  
         symbolCount++;
     } else {
         printf("Runtime Error: Symbol table full\n");
@@ -341,20 +339,17 @@ ASTNode *parseFactor()
         strcpy(node->identifier, currentToken.value);
         match(Identifier);
     }
-  else if (currentToken.type == StringLiteral) {  // Le type est maintenant StringLiteral pour un seul caractère
-    if (DEBUG) printf("Parser: Recognized char literal '%s'\n", currentToken.value);
+ else if (currentToken.type == StringLiteral) {  
+    if (DEBUG) printf("Parser: Recognized string literal '%s'\n", currentToken.value);
     
-    // Créer un noeud pour la chaîne de caractères (StringLiteralNode)
     node = malloc(sizeof(ASTNode));
     node->nodeType = StringLiteralNode;
     
-    // Allouer de la mémoire pour une chaîne de 1 caractère + le caractère '\0'
-    node->stringValue = malloc(2);  
-    node->stringValue[0] = currentToken.value[0];  // Récupérer le caractère de la chaîne
-    node->stringValue[1] = '\0';  // Ajouter le caractère de fin de chaîne
-
-    match(StringLiteral);  // Consommer le token de type StringLiteral
+    node->stringValue = malloc(strlen(currentToken.value) + 1);  
+    strcpy(node->stringValue, currentToken.value);  
+    match(StringLiteral);  
 }
+
 
 
 
