@@ -20,6 +20,8 @@ typedef enum
     PrintNode,
     IfNode,
     BlockNode,
+    CharLiteralNode,
+    StringLiteralNode
 } ASTNodeType;
 
 // Structure of an AST node
@@ -30,6 +32,8 @@ typedef struct ASTNode
     VariableType varType;
     int value;                  // For numbers
     char identifier[256];       // For variables
+    char charValue;
+    char *stringValue;
     struct ASTNode *left;
     struct ASTNode *right;
     struct ASTNode *condition;
@@ -39,23 +43,31 @@ typedef struct ASTNode
 } ASTNode;
 
 // Parser functions
+ASTNode *parseAssignment(VariableType varType);
 ASTNode *parseProgram();
 void freeAST(ASTNode *node);
 int evaluateAST(ASTNode *node);
 void evaluateProgram(ASTNode *node);
+
+// Assign Variable
+void assignVariableString(const char *name, VariableType type, const char *value);
+void assignVariableInt(const char *name, VariableType type, int intValue);
 
 // Symbol table
 typedef struct
 {
     char identifier[256];
     VariableType type;
-    int intValue;       
-    float floatValue;   
-    char charValue;
+
+    union {
+        int intValue;
+        char charValue[256];  
+        float floatValue;
+    };
 } SymbolTableEntry;
 
 
-
+SymbolTableEntry *lookupSymbol(const char *name);
 extern SymbolTableEntry symbolTable[100];
 extern int symbolCount;
 

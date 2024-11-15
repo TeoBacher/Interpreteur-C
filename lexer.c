@@ -67,6 +67,24 @@ Token getNextToken()
         if (DEBUG) printf("Lexer: Recognized number '%s'\n", buffer);
         return createToken(Number, buffer);
     }
+    
+    // Char literal
+    
+// Char literal
+if (current_char == '\'') {
+    advance();
+    char charValue = peek();  // Récupérer le caractère
+    advance();
+    if (peek() == '\'') {  // Vérifier pour le guillemet de fin
+        advance();
+        char buffer[2] = {charValue, '\0'};  // Chaîne de caractères d'un seul caractère
+        if (DEBUG) printf("Lexer: Recognized char '%c'\n", charValue);
+        return createToken(StringLiteral, buffer);  // Retourner un StringLiteral
+    } else {
+        printf("Lexer Error: Unterminated char literal\n");
+        exit(1);
+    }
+}
 
 
     // Identifiers and keywords
@@ -113,9 +131,12 @@ Token getNextToken()
         else if (strcmp(buffer, "int") == 0)
         {
             if (DEBUG) printf("Lexer: Recognized keyword 'int'\n");
-            return createToken(Int, "int");
+            return createToken(IntKeyword, "int");
         }
-
+        else if (strcmp(buffer, "char") == 0) 
+        {  
+            return createToken(CharKeyword, "char");
+        }
         else
         {
             if (DEBUG) printf("Lexer: Recognized identifier '%s'\n", buffer);
