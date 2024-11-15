@@ -14,6 +14,16 @@ Execution : ```./NOM_DE_LEXECUTABLE```
 
 Vous devez choisir entre l'execution en mode intéractif ou en mode fichier.
 
+### Mode debug
+
+Dans le fichier `lexer.h`, vous pouvez définir la variable `DEBUG` à `1` pour activer le mode debug.
+
+```c
+#define DEBUG 1
+```
+
+Ce mode affiche chaque étape de l'analyse syntaxique (parser, lexer et création de l'arbre).
+
 ## Fonctionnalités
 
 - [x] Arithmétique simple
@@ -22,6 +32,6 @@ Vous devez choisir entre l'execution en mode intéractif ou en mode fichier.
 - [x] Conditions
 - [x] Typage
 - [x] Lecture de fichiers
-- [ ] Boucles
+- [x] Boucles
 - [ ] Fonctions
 - [ ] Chaînes de caractères

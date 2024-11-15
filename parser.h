@@ -12,21 +12,26 @@ typedef enum
     AssignmentNode,
     PrintNode,
     IfNode,
+    ForNode,
+    WhileNode,
     BlockNode,
 } ASTNodeType;
 
 // Structure of an AST node
 typedef struct ASTNode
 {
-    ASTNodeType nodeType;       // Type of AST node
-    TokenType tokenType;        // For operators
-    int value;                  // For numbers
-    char identifier[256];       // For variables
+    ASTNodeType nodeType; // Type of AST node
+    TokenType tokenType;  // For operators
+    int value;            // For numbers
+    char identifier[256]; // For variables
     struct ASTNode *left;
     struct ASTNode *right;
     struct ASTNode *condition;
     struct ASTNode *thenBranch;
     struct ASTNode *elseBranch;
+    struct ASTNode *body;      // For loops
+    struct ASTNode *init;      // for loop
+    struct ASTNode *increment; // for loop
     struct ASTNode *next;
 } ASTNode;
 

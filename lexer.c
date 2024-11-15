@@ -49,7 +49,8 @@ Token getNextToken()
     // End of input
     if (current_char == '\0')
     {
-        if (DEBUG) printf("Lexer: End of input\n");
+        if (DEBUG)
+            printf("Lexer: End of input\n");
         return createToken(Eof, "");
     }
 
@@ -64,7 +65,8 @@ Token getNextToken()
             advance();
         }
         buffer[i] = '\0';
-        if (DEBUG) printf("Lexer: Recognized number '%s'\n", buffer);
+        if (DEBUG)
+            printf("Lexer: Recognized number '%s'\n", buffer);
         return createToken(Number, buffer);
     }
 
@@ -83,7 +85,8 @@ Token getNextToken()
         // Keywords
         if (strcmp(buffer, "if") == 0)
         {
-            if (DEBUG) printf("Lexer: Recognized keyword 'if'\n");
+            if (DEBUG)
+                printf("Lexer: Recognized keyword 'if'\n");
             return createToken(If, "if");
         }
         else if (strcmp(buffer, "else") == 0)
@@ -95,23 +98,39 @@ Token getNextToken()
                 // Recognize 'else if' as a single token
                 advance(); // 'i'
                 advance(); // 'f'
-                if (DEBUG) printf("Lexer: Recognized keyword 'else if'\n");
+                if (DEBUG)
+                    printf("Lexer: Recognized keyword 'else if'\n");
                 return createToken(ElseIf, "else if");
             }
             else
             {
-                if (DEBUG) printf("Lexer: Recognized keyword 'else'\n");
+                if (DEBUG)
+                    printf("Lexer: Recognized keyword 'else'\n");
                 return createToken(Else, "else");
             }
         }
+        else if (strcmp(buffer, "for") == 0)
+        {
+            if (DEBUG)
+                printf("Lexer: Recognized keyword 'for'\n");
+            return createToken(For, "for");
+        }
+        else if (strcmp(buffer, "while") == 0)
+        {
+            if (DEBUG)
+                printf("Lexer: Recognized keyword 'while'\n");
+            return createToken(While, "while");
+        }
         else if (strcmp(buffer, "print") == 0)
         {
-            if (DEBUG) printf("Lexer: Recognized keyword 'print'\n");
+            if (DEBUG)
+                printf("Lexer: Recognized keyword 'print'\n");
             return createToken(Print, "print");
         }
         else
         {
-            if (DEBUG) printf("Lexer: Recognized identifier '%s'\n", buffer);
+            if (DEBUG)
+                printf("Lexer: Recognized identifier '%s'\n", buffer);
             return createToken(Identifier, buffer);
         }
     }
@@ -124,12 +143,14 @@ Token getNextToken()
         if (peek() == '+')
         {
             advance();
-            if (DEBUG) printf("Lexer: Recognized operator '++'\n");
+            if (DEBUG)
+                printf("Lexer: Recognized operator '++'\n");
             return createToken(Inc, "++");
         }
         else
         {
-            if (DEBUG) printf("Lexer: Recognized operator '+'\n");
+            if (DEBUG)
+                printf("Lexer: Recognized operator '+'\n");
             return createToken(Add, "+");
         }
     case '-':
@@ -137,45 +158,54 @@ Token getNextToken()
         if (peek() == '-')
         {
             advance();
-            if (DEBUG) printf("Lexer: Recognized operator '--'\n");
+            if (DEBUG)
+                printf("Lexer: Recognized operator '--'\n");
             return createToken(Dec, "--");
         }
         else
         {
-            if (DEBUG) printf("Lexer: Recognized operator '-'\n");
+            if (DEBUG)
+                printf("Lexer: Recognized operator '-'\n");
             return createToken(Sub, "-");
         }
     case '*':
         advance();
-        if (DEBUG) printf("Lexer: Recognized operator '*'\n");
+        if (DEBUG)
+            printf("Lexer: Recognized operator '*'\n");
         return createToken(Mul, "*");
     case '/':
         advance();
-        if (DEBUG) printf("Lexer: Recognized operator '/'\n");
+        if (DEBUG)
+            printf("Lexer: Recognized operator '/'\n");
         return createToken(Div, "/");
     case '%':
         advance();
-        if (DEBUG) printf("Lexer: Recognized operator '%%'\n");
+        if (DEBUG)
+            printf("Lexer: Recognized operator '%%'\n");
         return createToken(Mod, "%");
     case '^':
         advance();
-        if (DEBUG) printf("Lexer: Recognized operator '^'\n");
+        if (DEBUG)
+            printf("Lexer: Recognized operator '^'\n");
         return createToken(Pow, "^");
     case '=':
         advance();
-        if (DEBUG) printf("Lexer: Recognized operator '='\n");
+        if (DEBUG)
+            printf("Lexer: Recognized operator '='\n");
         return createToken(Assign, "=");
     case '<':
         advance();
         if (peek() == '=')
         {
             advance();
-            if (DEBUG) printf("Lexer: Recognized operator '<='\n");
+            if (DEBUG)
+                printf("Lexer: Recognized operator '<='\n");
             return createToken(Le, "<=");
         }
         else
         {
-            if (DEBUG) printf("Lexer: Recognized operator '<'\n");
+            if (DEBUG)
+                printf("Lexer: Recognized operator '<'\n");
             return createToken(Lt, "<");
         }
     case '>':
@@ -183,12 +213,14 @@ Token getNextToken()
         if (peek() == '=')
         {
             advance();
-            if (DEBUG) printf("Lexer: Recognized operator '>='\n");
+            if (DEBUG)
+                printf("Lexer: Recognized operator '>='\n");
             return createToken(Ge, ">=");
         }
         else
         {
-            if (DEBUG) printf("Lexer: Recognized operator '>'\n");
+            if (DEBUG)
+                printf("Lexer: Recognized operator '>'\n");
             return createToken(Gt, ">");
         }
     case '!':
@@ -196,7 +228,8 @@ Token getNextToken()
         if (peek() == '=')
         {
             advance();
-            if (DEBUG) printf("Lexer: Recognized operator '!='\n");
+            if (DEBUG)
+                printf("Lexer: Recognized operator '!='\n");
             return createToken(Ne, "!=");
         }
         else
@@ -206,20 +239,29 @@ Token getNextToken()
         }
     case '(':
         advance();
-        if (DEBUG) printf("Lexer: Recognized symbol '('\n");
+        if (DEBUG)
+            printf("Lexer: Recognized symbol '('\n");
         return createToken(Lparen, "(");
     case ')':
         advance();
-        if (DEBUG) printf("Lexer: Recognized symbol ')'\n");
+        if (DEBUG)
+            printf("Lexer: Recognized symbol ')'\n");
         return createToken(Rparen, ")");
     case '{':
         advance();
-        if (DEBUG) printf("Lexer: Recognized symbol '{'\n");
+        if (DEBUG)
+            printf("Lexer: Recognized symbol '{'\n");
         return createToken(Lbrace, "{");
     case '}':
         advance();
-        if (DEBUG) printf("Lexer: Recognized symbol '}'\n");
+        if (DEBUG)
+            printf("Lexer: Recognized symbol '}'\n");
         return createToken(Rbrace, "}");
+    case ';':
+        advance();
+        if (DEBUG)
+            printf("Lexer: Recognized symbol ';'\n");
+        return createToken(Semicolon, ";");
     default:
         printf("Lexer Error: Unknown character '%c'\n", current_char);
         exit(1);

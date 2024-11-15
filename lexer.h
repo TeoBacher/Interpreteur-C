@@ -6,42 +6,44 @@
 #include <string.h>
 
 // Enable debugging by setting DEBUG to 1
-#define DEBUG 1
+#define DEBUG 0
 
 // Definition of token types
 typedef enum
 {
     // Single-character tokens
-    Number = 0,       // Numbers
-    Identifier = 1,   // Identifiers
-    Add = 2,          // '+'
-    Sub = 3,          // '-'
-    Mul = 4,          // '*'
-    Div = 5,          // '/'
-    Mod = 6,          // '%'
-    Inc = 7,          // '++'
-    Dec = 8,          // '--'
-    Pow = 9,          // '^'
-    Lt = 10,          // '<'
-    Le = 11,          // '<='
-    Gt = 12,          // '>'
-    Ge = 13,          // '>='
-    Ne = 14,          // '!='
-    Assign = 15,      // '='
-    // Keywords
-    If = 16,          // 'if'
-    Else = 17,        // 'else'
-    ElseIf = 18,      // 'else if'
-    Print = 19,       // 'print'
-    // Symbols
-    Lparen = 20,      // '('
-    Rparen = 21,      // ')'
-    Lbrace = 22,      // '{'
-    Rbrace = 23,      // '}'
-    Semicolon = 24,   // ';'
-    // Special tokens
-    Eof = 25,         // End of file
-    Error = 26        // Error
+    Number = 0,     // Numbers
+    Identifier = 1, // Identifiers
+    Add = 2,        // '+'
+    Sub = 3,        // '-'
+    Mul = 4,        // '*'
+    Div = 5,        // '/'
+    Mod = 6,        // '%'
+    Inc = 7,        // '++'
+    Dec = 8,        // '--'
+    Pow = 9,        // '^'
+    Lt = 10,        // '<'
+    Le = 11,        // '<='
+    Gt = 12,        // '>'
+    Ge = 13,        // '>='
+    Ne = 14,        // '!='
+    Assign = 15,    // '='
+                    // Keywords
+    If = 16,        // 'if'
+    Else = 17,      // 'else'
+    ElseIf = 18,    // 'else if'
+    For = 19,       // 'for'
+    While = 20,     // 'while'
+    Print = 21,     // 'print'
+                    // Symbols
+    Lparen = 22,    // '('
+    Rparen = 23,    // ')'
+    Lbrace = 24,    // '{'
+    Rbrace = 25,    // '}'
+    Semicolon = 26, // ';'
+                    // Special tokens
+    Eof = 27,       // End of file
+    Error = 28      // Error
 } TokenType;
 
 // Token structure
