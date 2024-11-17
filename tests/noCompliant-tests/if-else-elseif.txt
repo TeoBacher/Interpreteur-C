@@ -1,0 +1,15 @@
+// tests/noCompliant/if-else-elseif.txt
+int score = 85;
+char a = 'A';
+char b = 'B';
+char c = 'C';
+char d = 'D';
+if (score >= 90) {
+    print(a);
+} else if (score >= 80) {
+    print(b);
+} else if (score >= 70) {
+    print(c);
+} else {
+    print(d);
+}

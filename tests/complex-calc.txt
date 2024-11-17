@@ -1,0 +1,4 @@
+// tests/complex-calc.txt
+int x = 5;
+int y = x * x + 2 * x + 1;
+print(y); // 36

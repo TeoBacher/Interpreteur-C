@@ -1,0 +1,6 @@
+// tests/while.txt
+int count = 3;
+while (count > 0) {
+    print(count); // 3, 2, 1
+    count = count - 1;
+}

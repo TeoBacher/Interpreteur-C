@@ -132,7 +132,7 @@ ASTNode *parseStatement()
         match(Semicolon);
         break;
     case Identifier:
-        node = parseAssignment( TYPE_INT);
+        node = parseAssignment(TYPE_INT);
         match(Semicolon);
         break;
     default:
@@ -194,7 +194,7 @@ ASTNode *parseForStatement()
     match(Lparen);
 
     // Ini
-    node->init = parseAssignment( TYPE_INT);
+    node->init = parseAssignment(TYPE_INT);
     match(Semicolon);
 
     // Condition
@@ -202,7 +202,7 @@ ASTNode *parseForStatement()
     match(Semicolon);
 
     // Increment
-    node->increment = parseAssignment( TYPE_INT);
+    node->increment = parseAssignment(TYPE_INT);
     match(Rparen);
 
     node->body = parseBlock();
@@ -281,28 +281,33 @@ void assignVariableInt(const char *name, VariableType type, int intValue)
 }
 
 //  Assignation for string
-void assignVariableString(const char *name, VariableType type, const char *value) {
-    for (int i = 0; i < symbolCount; i++) {
-        if (strcmp(symbolTable[i].identifier, name) == 0) {
+void assignVariableString(const char *name, VariableType type, const char *value)
+{
+    for (int i = 0; i < symbolCount; i++)
+    {
+        if (strcmp(symbolTable[i].identifier, name) == 0)
+        {
             symbolTable[i].type = type;
             strncpy(symbolTable[i].charValue, value, sizeof(symbolTable[i].charValue) - 1);
-            symbolTable[i].charValue[sizeof(symbolTable[i].charValue) - 1] = '\0';  // Sécurise la fin de chaîne
+            symbolTable[i].charValue[sizeof(symbolTable[i].charValue) - 1] = '\0'; // Sécurise la fin de chaîne
             return;
         }
     }
 
-    if (symbolCount < 100) {
+    if (symbolCount < 100)
+    {
         strcpy(symbolTable[symbolCount].identifier, name);
         symbolTable[symbolCount].type = type;
         strncpy(symbolTable[symbolCount].charValue, value, sizeof(symbolTable[symbolCount].charValue) - 1);
         symbolTable[symbolCount].charValue[sizeof(symbolTable[symbolCount].charValue) - 1] = '\0';
         symbolCount++;
-    } else {
+    }
+    else
+    {
         printf("Runtime Error: Symbol table full\n");
         exit(1);
     }
 }
-
 
 ASTNode *parseAssignment(VariableType varType)
 {
@@ -311,35 +316,43 @@ ASTNode *parseAssignment(VariableType varType)
     node->varType = varType;
 
     // Vérifie si le token actuel est un identifiant
-    if (currentToken.type == Identifier) {
-        strcpy(node->identifier, currentToken.value);  
-        match(Identifier);  
-    } else {
+    if (currentToken.type == Identifier)
+    {
+        strcpy(node->identifier, currentToken.value);
+        match(Identifier);
+    }
+    else
+    {
         printf("Syntax Error: Expected an identifier, but got '%s'\n", currentToken.value);
         exit(1);
     }
 
     // Vérifie si le prochain token est '='
-    if (currentToken.type == Assign) {
-        match(Assign);  
-    } else {
+    if (currentToken.type == Assign)
+    {
+        match(Assign);
+    }
+    else
+    {
         printf("Syntax Error: Expected '=', but got '%s'\n", currentToken.value);
         exit(1);
     }
 
     // Gère l'expression après l'affectation
-    if (varType == TYPE_CHAR && currentToken.type == StringLiteral) {
+    if (varType == TYPE_CHAR && currentToken.type == StringLiteral)
+    {
         node->right = malloc(sizeof(ASTNode));
         node->right->nodeType = CharLiteralNode;
-        node->right->stringValue = strdup(currentToken.value);  // Copie la chaîne
+        node->right->stringValue = strdup(currentToken.value); // Copie la chaîne
         match(StringLiteral);
-    } else {
-        node->right = parseExpression();  // Pour d'autres types
+    }
+    else
+    {
+        node->right = parseExpression(); // Pour d'autres types
     }
 
     return node;
 }
-
 
 ASTNode *parsePrintStatement()
 {
@@ -349,7 +362,6 @@ ASTNode *parsePrintStatement()
     node->nodeType = PrintNode;
     match(Print);
     match(Lparen);
-    node->left = parseExpression();
     match(Rparen);
     return node;
 }

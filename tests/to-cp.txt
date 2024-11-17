@@ -1,0 +1,28 @@
+// For copy past in interactive mode in the console
+
+// For loop
+int c = 1;
+for (c = 1; c < 3; c = c + 1){ print(c);}
+
+// While loop
+int count = 3;
+while (count > 0) {print(count);count = count - 1;}
+
+// If else
+int a = 10;
+int b = 5;
+if (a > b) {print(a);} else {print(b);}
+
+// Arithmetic operations
+int a = 10;
+int b = 5;
+int sum = a + b;
+int diff = a - b;
+int prod = a * b;
+print(sum);
+print(diff);
+print(prod);
+
+// Char 
+char lettre = 'A';
+print(lettre);

@@ -1,0 +1,3 @@
+// tests/char.txt
+char c = 'a';
+print(c);

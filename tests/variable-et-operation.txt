@@ -1,0 +1,13 @@
+// tests/variable-et-operation.txt
+int a = 10;
+int b = 5;
+int sum = a + b;
+int diff = a - b;
+int prod = a * b;
+int quot = a / b;
+int mod = a % b;
+print(sum); // 15
+print(diff); // 5
+print(prod); // 50
+print(quot); // 2
+print(mod); // 0

@@ -1,2 +1,0 @@
-char h = 'hello World!!';
-print(h); // hello World!!

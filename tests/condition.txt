@@ -1,0 +1,7 @@
+// tests/condition.txt
+int age = 18;
+if (age >= 18) {
+    print(age);
+} else {
+    print(0);
+}

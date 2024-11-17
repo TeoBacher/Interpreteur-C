@@ -98,7 +98,7 @@ Token getNextToken()
             advance();
             if (DEBUG)
                 printf("Lexer: Recognized char literal (as string) '%s'\n", buffer);
-            return createToken(StringLiteral, buffer); // Retourner une chaîne de caractères
+            return createToken(StringLiteral, buffer); // Return as string literal
         }
         else
         {

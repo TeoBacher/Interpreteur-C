@@ -1,0 +1,10 @@
+// tests/noCompliant/imbric-loop.txt
+int i = 1;
+int j = 1;
+
+for (i = 1; i <= 3; i = i + 1) {
+    print(i); // 1, 2, 3
+    for (j = 1; j <= 2; j = j + 1) {
+        print(j); // 1, 2
+    }
+}
