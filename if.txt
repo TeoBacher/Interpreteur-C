@@ -1,9 +1,9 @@
-int a = 1
-int b = 2
-int c = 0
-char h = 'hello World!!'
+int a = 1;
+int b = 2;
+int c = 0;
+char h = 'hello World!!';
 if (a < b) {
-    c = b * ( a + 3 )
+    c = b * ( a + 3 );
 }
-print(h)
-print(c)
+print(h);
+print(c);

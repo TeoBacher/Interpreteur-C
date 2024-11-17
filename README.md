@@ -6,7 +6,6 @@ L'objectif de ce projet est de créer un ***interpréteur*** simple.
 
 Compilation :
 
-
 ```bash
 gcc -o NOM_DE_LEXECUTABLE lexer.c parser.c input.c
 ```
@@ -36,4 +35,4 @@ Ce mode affiche chaque étape de l'analyse syntaxique (parser, lexer et créatio
 - [x] Boucles
 - [x] Commentaires
 - [ ] Fonctions
-- [ ] Chaînes de caractères
+- [x] Chaînes de caractères (print)
