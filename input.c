@@ -7,11 +7,9 @@ void interpret(const char *inputExpression)
 {
     setInput(inputExpression);
     ASTNode *program = parseProgram();
-    if (DEBUG)
-        printf("Interpreter: Parsed program successfully\n");
+    if (DEBUG) printf("Interpreter: Parsed program successfully\n");
     evaluateProgram(program);
-    if (DEBUG)
-        printf("Interpreter: Evaluated AST successfully\n");
+    if (DEBUG) printf("Interpreter: Evaluated AST successfully\n");
     freeAST(program);
 }
 
@@ -66,7 +64,6 @@ void handleInput()
 
     do
     {
-        system("clear");
         printf("Choisissez le mode d'exécution:\n");
         printf("1. Mode fichier\n");
         printf("2. Mode interactif\n");
@@ -89,7 +86,7 @@ void handleInput()
     }
 }
 
-// Main function
+// Fonction principale
 int main()
 {
     handleInput();
