@@ -34,5 +34,4 @@ Ce mode affiche chaque étape de l'analyse syntaxique (parser, lexer et créatio
 - [x] Lecture de fichiers
 - [x] Boucles
 - [x] Commentaires
-- [ ] Fonctions
 - [x] Chaînes de caractères (print)
